@@ -19,7 +19,7 @@ class UI {
         <td><a href="#" class="delete" >X</a></td>
         `;
         list.appendChild(row);
-        console.log(book);
+        // console.log(book);
 
 
     }
@@ -57,6 +57,50 @@ class UI {
 
     }
 }
+//Local Storage Class
+
+class Store {
+    static getBooks(){
+        let books;
+        if(localStorage.getItem('books') === null){
+            books = [];
+        }else{
+            books = JSON.parse(localStorage.getItem('books'));
+        }
+        return books;
+    }
+
+    static displayBooks(){
+        const books = Store.getBooks();
+        books.forEach(function(book){
+            const ui = new UI;
+            //add book to ui
+            ui.addBookToList(book);
+
+        });
+
+    }
+
+    static addBook(book){
+        const books = Store.getBooks();
+        books.push(book);
+        localStorage.setItem('books', JSON.stringify(books));
+    }
+
+    static  removeBook(isbn){
+        const books = Store.getBooks();
+        books.forEach(function(book, index){
+            if(book.isbn === isbn){
+                books.splice(index, 1);
+            }
+        });
+        localStorage.setItem('books', JSON.stringify(books));
+
+    }
+}
+
+//DOM load event
+document.addEventListener('DOMContentLoaded', Store.displayBooks);
 
 //event listeners add Book
 document.getElementById('book-form').addEventListener('submit', function(e){
@@ -76,8 +120,16 @@ document.getElementById('book-form').addEventListener('submit', function(e){
         //error alert
         ui.showAlert("Please fill in all fields", 'error');
     }else{
+    
     //add book to list
     ui.addBookToList(book);
+
+    //add BOOK to LS
+    Store.addBook(book);
+
+
+
+
     //show success
     ui.showAlert('Book Added!', 'success');
 
@@ -94,6 +146,9 @@ document.getElementById('book-list').addEventListener('click', function(e){
     const ui = new UI();
     //delete book
     ui.deleteBook(e.target);
+    //REMOVE from LS
+    Store.removeBook(e.target.parentElement.previousElementSibling.textContent);
+
     //show message.
     ui.showAlert('Book Removed!', 'success');
 
